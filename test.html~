@@ -1,0 +1,56 @@
+<form action="http://www.example.com/current_page" enctype='multipart/form-data' method="post" onsubmit="return formSubmit();" name="submitIMGurl">
+<input type="text" value="http://" name="img_url" />
+<input type="submit" value="Submit" />
+</form>
+
+<script type="text/javascript">
+
+function formSubmit() {
+    var url = document.forms["submitIMGurl"].elements["img_url"].value;
+    if (!checkURL(url)) {
+        alert("It looks like the url that you had provided is not valid! Please only submit correct image file. We only support these extensions:- jpeg, jpg, gif, png.");
+        return(false);
+    }
+    testImage(url, function(testURL, result) {
+        if (result == "success") {
+            // you can submit the form now
+            document.forms["submitIMGurl"].submit();
+        } else if (result == "error") {
+            alert("The image URL does not point to an image or the correct type of image.");
+        } else {
+            alert("The image URL was not reachable.  Check that the URL is correct.");
+        }
+
+    });
+    return(false);    // can't submit the form yet, it will get sumbitted in the callback
+}
+
+function checkURL(url) {
+    return(url.match(/\.(jpeg|jpg|gif|png)$/) != null);
+}
+
+
+function testImage(url, callback, timeout) {
+    timeout = timeout || 5000;
+    var timedOut = false, timer;
+    var img = new Image();
+    img.onerror = img.onabort = function() {
+        if (!timedOut) {
+            clearTimeout(timer);
+            callback(url, "error");
+        }
+    };
+    img.onload = function() {
+        if (!timedOut) {
+            clearTimeout(timer);
+            callback(url, "success");
+        }
+    };
+    img.src = url;
+    timer = setTimeout(function() {
+        timedOut = true;
+        callback(url, "timeout");
+    }, timeout); 
+}
+
+</script>
